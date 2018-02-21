@@ -104,8 +104,8 @@ while ( my $record = $records->next() ) {
 	$sf_other      = "";
 	foreach my $field (@fields_960) {
 
-		$i1 = $field->indicator(1);
-		$i2 = $field->indicator(2);
+		$i1      = $field->indicator(1);
+		$i2      = $field->indicator(2);
 		$heading = lc $field->as_string();
 		$heading =~ s/(\(|\))//g;
 		$heading =~ s/ ; |, / /g;
@@ -154,7 +154,7 @@ while ( my $record = $records->next() ) {
 		@output_columns = (
 			$bib_id,  $i1,            $i2,
 			$heading, $field_content, $sf_a,
-			$sf_x,    $sf_y, $sf_other
+			$sf_x,    $sf_y,          $sf_other
 		);
 		$output = join( "\t", @output_columns );
 		say $fh_961 $output;
@@ -178,11 +178,16 @@ while ( my $record = $records->next() ) {
 	$sf_other      = "";
 	foreach my $field (@fields_968) {
 
-		$i1      = $field->indicator(1);
-		$i2      = $field->indicator(2);
-		$heading = $field->subfield('9');
-		$heading =~ s/^ \| //;
-		$heading =~ s/<-> //g;
+		$i1 = $field->indicator(1);
+		$i2 = $field->indicator(2);
+		if ( $field->subfield('9') ) {
+			$heading = $field->subfield('9');
+			$heading =~ s/^ \| //;
+			$heading =~ s/<-> //g;
+		}
+		else {
+			$heading = 'KEINE DK';
+		}
 		my @subfields = $field->subfields();
 		( $sf_a, $sf_x, $sf_y, $sf_z, $sf_9, $sf_other ) =
 		  _subfields_968(@subfields);
@@ -206,12 +211,10 @@ sub _field_content {
 	my $str       = "";
 	while ( my $subfield = shift(@subfields) ) {
 		my ( $code, $data ) = @$subfield;
-		say "Code: $code; Data: $data";
 		$str = "$str \$$code $data";
 	}
 	return trim($str);
 }
-
 
 sub _subfields_960 {
 	my @subfields = @_;
@@ -222,22 +225,17 @@ sub _subfields_960 {
 	my $sf_other  = "";
 	while ( my $subfield = shift(@subfields) ) {
 		my ( $code, $data ) = @$subfield;
-		say "-->961 Code: $code; Data: $data";
 		if ( $code eq 'a' ) {
 			$sf_a = "$sf_a | $data";
-			say "--> a: $sf_b";
 		}
 		elsif ( $code eq 'b' ) {
 			$sf_b = "$sf_b | $data";
-			say "--> x: $sf_b";
 		}
 		elsif ( $code eq 'c' ) {
 			$sf_c = "$sf_c | $data";
-			say "--> y: $sf_c";
 		}
 		elsif ( $code eq 'd' ) {
 			$sf_d = "$sf_d | $data";
-			say "--> y: $sf_c";
 		}
 		else {
 			$sf_other = "$sf_other | $data";
@@ -291,7 +289,6 @@ sub _subfields_968 {
 	my $sf_other  = "";
 	while ( my $subfield = shift(@subfields) ) {
 		my ( $code, $data ) = @$subfield;
-		say "Code: $code; Data: $data";
 		if ( $code eq 'a' ) {
 			$sf_a = "$sf_a | $data";
 		}
